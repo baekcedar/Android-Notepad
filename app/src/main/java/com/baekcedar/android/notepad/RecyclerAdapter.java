@@ -20,7 +20,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     int itemLayout;
     MainActivity context;
     RecyclerData data;
-    boolean flag =false;
+
+
 
     //생성자
     public RecyclerAdapter(ArrayList<RecyclerData> datas, int itemLayout, MainActivity context){
@@ -38,34 +39,37 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
+
         data = datas.get(position);
-        flag = false;
+
        holder.carView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public boolean onLongClick(View v) {
-                flag = true;
-                lastPosision-=1;
-                context.delete(data);
-                return false;
+            public boolean onLongClick(View v) {    //롱클릭
+
+                context.delete(position);
+
+                return true; //true 이면 Click 처리 안됨.
             }
         });
 
         holder.carView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) { //클릭시
-                // TODO 클릭시 넘어가기
-                if(flag){
-                    flag = false;
-                }else {
-                    context.update(data);
-                }
+            public void onClick(View view) {    //클릭시 수정모드
+
+                    context.updateMode(position);
+                    context.viewMode(2);
+
             }
         });
 
-
-
-        holder.textTitle.setText(data.title);
+        String setTitle;
+        if(data.title.length()> 30){ //30 자 이상 처리
+            setTitle = data.title.substring(0, 30);
+        }else{
+            setTitle = data.title;
+        }
+        holder.textTitle.setText(setTitle);
         holder.itemView.setTag(data);
 
         setAnimation(holder.carView, position);
@@ -89,6 +93,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         public ViewHolder(View itemView) {
             super(itemView);
             textTitle = (TextView) itemView.findViewById(R.id.carTextTitle);
+
             carView = (CardView) itemView.findViewById(R.id.cardItem);
         }
 

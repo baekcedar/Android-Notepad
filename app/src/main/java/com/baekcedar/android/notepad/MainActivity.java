@@ -12,18 +12,19 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    RelativeLayout conLayout;
-    RelativeLayout mainLayout;
+    RelativeLayout conLayout,mainLayout,deletePopupLayout;
     EditText editText;
     ArrayList<RecyclerData> datas;
     RecyclerData  data;
     RecyclerView recyclerView;
-    Button writeBtn,updateBtn;
-
+    Button writeBtn,deleteYesBtn,deleteNoBtn;
+    StringBuffer strBuffer;
+    int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,17 +36,16 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         Button cancelBtn         = (Button)findViewById(R.id.cancelBtn);
         writeBtn                 = (Button)findViewById(R.id.writeBtn);
-        updateBtn                 = (Button)findViewById(R.id.updateBtn);
+        deleteYesBtn             = (Button)findViewById(R.id.yesBtn);
+        deleteNoBtn              = (Button)findViewById(R.id.noBtn);
         editText                 = (EditText)findViewById(R.id.editText);
         conLayout                = (RelativeLayout)findViewById(R.id.relativeLayout);
         mainLayout               = (RelativeLayout) findViewById(R.id.mainLayout);
-
+        deletePopupLayout        = (RelativeLayout) findViewById(R.id.popupLayout);
 
         // 리사이클 뷰
         datas = new ArrayList<>();
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-
-
 
         runRecyclerView();
         ///////여기까지  리사이클 뷰
@@ -53,110 +53,110 @@ public class MainActivity extends AppCompatActivity {
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view) { // (+) 버튼 클릭시
                 mainLayout.setVisibility(View.GONE);
                 conLayout.setVisibility(View.VISIBLE);  //메모화면 보이기
-
-
-                System.out.println("fab");
-
+                strBuffer = new StringBuffer();
+                writeBtn.setText("Write");
             }
         });
         // write 버튼 클릭시(저장)
         writeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println("write");
-                conLayout.setVisibility(View.GONE);     // 메모화면 숨기기
-                mainLayout.setVisibility(View.VISIBLE); // 메인화면 보이기
-                StringBuffer strb = new StringBuffer();
-                strb.append(editText.getText().toString());
-                write(1,strb);
+                if (writeBtn.getText().equals("Update")) {
+                    writeBtn.setText("Write");
+                    updateSave();
+                }else {
+                    write();
+                }
+                viewMode(1);
+                keyBoardOff();
                 runRecyclerView();
-                keyBoardOff(view.getContext(), editText);
                 editText.setText("");
+
             }
         });
-        updateBtn.setOnClickListener(new View.OnClickListener() {
+        deleteYesBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println("write");
-                conLayout.setVisibility(View.GONE);     // 메모화면 숨기기
-                mainLayout.setVisibility(View.VISIBLE); // 메인화면 보이기
-                writeBtn.setVisibility(View.VISIBLE);
-                updateBtn.setVisibility(View.GONE);
-                StringBuffer strb = new StringBuffer();
-                strb.append(editText.getText().toString());
-                write(0,strb);
+                datas.remove(position);
+                deletePopupLayout.setVisibility(View.GONE);
                 runRecyclerView();
-                keyBoardOff(view.getContext(), editText);
-                editText.setText("");
             }
         });
+        deleteNoBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deletePopupLayout.setVisibility(View.GONE);
+            }
+        });
+
         // cancel 버튼 클릭시
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println("cancel");
-                conLayout.setVisibility(View.GONE);     // 메모화면 숨기기
-                mainLayout.setVisibility(View.VISIBLE); // 메인화면 보이기
-                writeBtn.setVisibility(View.VISIBLE);
-                updateBtn.setVisibility(View.GONE);
-                editText.setText("");
-                keyBoardOff(view.getContext(), editText);
+                viewMode(1);
             }
         });
 
     }
     //저장버튼
-    public void write(int flag, StringBuffer str){
-        if(str.toString().equals("")){
-
+    public void write(){
+        if(editText.getText().length()==0){
+            Toast.makeText(getApplicationContext(),"내용을 작성하세요.",Toast.LENGTH_SHORT).show();
         }else {
-            if(flag==1){
-                data = new RecyclerData();
-                data.title = str.toString();
-                datas.add(data);
-            }else {
-
-                data.title = str.toString();
-
-            }
+            data = new RecyclerData();
+            data.title = editText.getText().toString();
+            datas.add(data);
         }
     }
 
     // 수정 모드
-    public void update(RecyclerData data){
+    public void updateMode(int position){
         StringBuffer strb = new StringBuffer();
+        data = datas.get(position);
+        writeBtn.setText("update");
         strb.append(data.title.toString());
-        System.out.println(strb);
         editText.setText(strb);
-        conLayout.setVisibility(View.VISIBLE);      // 메모화면 숨기기
-        mainLayout.setVisibility(View.GONE);        // 메인화면 보이기
-        writeBtn.setVisibility(View.GONE);
-        updateBtn.setVisibility(View.VISIBLE);
+    }
+    public void updateSave(){
+        data.title = editText.getText().toString();
 
 
     }
-    public void delete(RecyclerData data){
-        datas.remove(data);
-        runRecyclerView();
+    public void delete(int position){
+        this.position = position;
+        deletePopupLayout.setVisibility(View.VISIBLE);
 
     }
+
     public void runRecyclerView(){
-
-
         RecyclerAdapter adapter = new RecyclerAdapter(datas,R.layout.card_item, this);
         recyclerView.setAdapter(adapter);
-
         RecyclerView.LayoutManager manager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(manager);
     }
     //키보드 내리기
-    public static void keyBoardOff(Context context, EditText editText) {
-        InputMethodManager imm = (InputMethodManager) context.getSystemService(context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(editText.getWindowToken(),0);
-    }
+    protected void keyBoardOff() {
+            View view = getCurrentFocus();
+            InputMethodManager mgr = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            mgr.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
+    }
+    public void viewMode(int mode){      //메인화면으로 전환
+        if(mode == 1) { // edit 모드 -> 메인으로
+            conLayout.setVisibility(View.GONE);     // 메모화면 숨기기
+            mainLayout.setVisibility(View.VISIBLE); // 메인화면 보이기
+            //System.out.println(view);
+            editText.setText("");
+            keyBoardOff();
+        } else if (mode == 2){ // 메인에서 -> edit 모드
+            conLayout.setVisibility(View.VISIBLE);     // 메모화면 보이기
+            mainLayout.setVisibility(View.GONE); // 메인화면 숨기기
+        }
+
+
+    }
 
 }
