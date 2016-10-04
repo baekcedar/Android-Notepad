@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 viewMode(1);
                 keyBoardOff();
-                runRecyclerView();
+                //runRecyclerView();
                 editText.setText("");
 
             }
@@ -116,19 +116,20 @@ public class MainActivity extends AppCompatActivity {
     public void updateMode(int position){
         StringBuffer strb = new StringBuffer();
         data = datas.get(position);
-        writeBtn.setText("update");
+        writeBtn.setText("Update");
         strb.append(data.title.toString());
         editText.setText(strb);
+        
     }
     public void updateSave(){
         data.title = editText.getText().toString();
-
+        runRecyclerView();
 
     }
     public void delete(int position){
         this.position = position;
         deletePopupLayout.setVisibility(View.VISIBLE);
-
+        runRecyclerView();
     }
 
     public void runRecyclerView(){

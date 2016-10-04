@@ -57,17 +57,17 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             @Override
             public void onClick(View view) {    //클릭시 수정모드
 
-                    context.updateMode(position);
-                    context.viewMode(2);
+                context.updateMode(position);
+                context.viewMode(2);
 
             }
         });
 
         String setTitle;
-        if(data.title.length()> 30){ //30 자 이상 처리
-            setTitle = data.title.substring(0, 30);
+        if(data.title.length() > 30){ //30 자 이상 처리
+            setTitle = (position+1)+". "+data.title.substring(0, 30);
         }else{
-            setTitle = data.title;
+            setTitle = (position+1)+". "+data.title;
         }
         holder.textTitle.setText(setTitle);
         holder.itemView.setTag(data);
